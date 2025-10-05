@@ -6,6 +6,7 @@ from database import init_db, close_db
 from routes import movie_router
 
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
