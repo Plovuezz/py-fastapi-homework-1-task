@@ -40,21 +40,21 @@ async def get_movies(
             detail="No movies found."
         )
 
-    movies = await db.scalars(
+    movies = (await db.scalars(
         select(MovieModel)
         .offset((page - 1) * per_page)
         .limit(per_page)
         .order_by(MovieModel.id)
-    )
+    )).all()
 
     return MovieListResponseSchema(
         movies=movies,
         prev_page=(
-            str(request.url.replace_query_params(page=page - 1, per_page=per_page))
+            f"/theater/movies/?page={page - 1}&per_page={per_page}"
             if page > 1 else None
         ),
         next_page=(
-            str(request.url.replace_query_params(page=page + 1, per_page=per_page))
+            f"/theater/movies/?page={page + 1}&per_page={per_page}"
             if page < total_pages else None
         ),
         total_pages=total_pages,
@@ -75,7 +75,6 @@ async def get_movies(
         },
     },
 )
-@router.get("/movies/{movie_id}/", response_model=MovieDetailResponseSchema)
 async def get_movie(movie_id: int, db: Annotated[AsyncSession, Depends(get_db)]):
     movie = await db.get(MovieModel, movie_id)
     if movie is None:
